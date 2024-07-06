@@ -9,9 +9,17 @@ async function query(queryObject) {
         password: process.env.POSTGRES_PASSWORD,
     });
     await client.connect();
-    const result = await client.query(queryObject);
-    await client.end();
-    return result;
+
+    // Essa estrutura é bem importante aqui, já que mesmo se o banco receba uma uma query corrompida 
+    // garantimos que o essa conexão seja encerrada (end()) -> finally 
+    try {
+        const result = await client.query(queryObject);
+        return result;
+    } catch (error) {
+        console.error(error)
+    } finally {
+        await client.end();
+    } 
 }
 
 export default {
